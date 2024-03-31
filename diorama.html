@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Night city</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #000;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="myCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const village = {
+      buildings: [
+        {x: 50, y: 500, width: 150, height: 200},
+        {x: 250, y: 450, width: 100, height: 250},
+        {x: 400, y: 400, width: 200, height: 300},
+        {x: 650, y: 350, width: 150, height: 350},
+        {x: 850, y: 450, width: 100, height: 250},
+        {x: 1000, y: 400, width: 200, height: 300},
+        {x: 1250, y: 350, width: 150, height: 350},
+        {x: 1450, y: 450, width: 100, height: 250}
+      ],
+      lights: [
+        {x: 100, y: 550, color: 'yellow'},
+        {x: 300, y: 500, color: 'orange'},
+        {x: 500, y: 450, color: 'red'},
+        {x: 700, y: 400, color: 'green'},
+        {x: 900, y: 500, color: 'blue'},
+        {x: 1050, y: 450, color: 'red'},
+        {x: 1300, y: 400, color: 'yellow'},
+        {x: 1500, y: 500, color: 'blue'}
+      ]
+    };
+
+    let stars = [];
+    for (let i = 0; i < 200; i++) {
+      stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 2 });
+    }
+
+    let clouds = [];
+    for (let i = 0; i < 5; i++) {
+      clouds.push({ x: Math.random() * canvas.width, y: Math.random() * 100 + 50, speed: Math.random() * 2 + 1 });
+    }
+
+    // Sky
+
+    function drawSky() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < stars.length; i++) {
+        const star = stars[i];
+        ctx.beginPath();
+        ctx.fillStyle = 'rgba(255, 255, 255, ' + Math.random() + ')';
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Buildings
+
+    function drawBuildings() {
+      ctx.fillStyle = '#808080';
+      village.buildings.forEach(building => {
+        ctx.fillRect(building.x, building.y, building.width, building.height);
+        ctx.beginPath();
+        ctx.moveTo(building.x - 10, building.y);
+        ctx.lineTo(building.x + building.width / 2, building.y - 30);
+        ctx.lineTo(building.x + building.width + 10, building.y);
+        ctx.closePath();
+        ctx.fillStyle = '#808080';
+        ctx.fill();
+      });
+    }
+
+    // Lights
+
+    function drawLights() {
+      village.lights.forEach(light => {
+        ctx.beginPath();
+        ctx.fillStyle = light.color;
+        ctx.arc(light.x, light.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawSky();
+      drawBuildings();
+      drawLights();
+      drawClouds();
+      requestAnimationFrame(animate);
+    }
+
+    // Clouds
+
+    function drawClouds() {
+      for (let i = 0; i < clouds.length; i++) {
+        const cloud = clouds[i];
+        ctx.beginPath();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.moveTo(cloud.x, cloud.y + 20);
+        ctx.bezierCurveTo(cloud.x + 15, cloud.y + 5, cloud.x + 85, cloud.y + 5, cloud.x + 100, cloud.y + 20);
+        ctx.bezierCurveTo(cloud.x + 115, cloud.y + 45, cloud.x + 85, cloud.y + 70, cloud.x + 50, cloud.y + 70);
+        ctx.bezierCurveTo(cloud.x + 20, cloud.y + 70, cloud.x, cloud.y + 50, cloud.x, cloud.y + 40);
+        ctx.bezierCurveTo(cloud.x - 15, cloud.y + 25, cloud.x + 15, cloud.y + 5, cloud.x + 20, cloud.y + 20);
+        ctx.fill();
+        cloud.x += cloud.speed;
+        if (cloud.x > canvas.width) {
+          cloud.x = -100;
+        }
+      }
+    }
+
+    animate();
+
+    canvas.addEventListener('mousemove', function(event) {
+      const mouseX = event.clientX;
+      const mouseY = event.clientY;
+
+      village.lights.forEach(light => {
+        const dx = mouseX - light.x;
+        const dy = mouseY - light.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 20) {
+          light.color = 'black';
+        } else {
+          light.color = 'yellow';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
